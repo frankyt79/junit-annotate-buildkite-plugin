@@ -38,6 +38,23 @@ docker \
     --volume "$PLUGIN_DIR/ruby:/src" \
     --env "BUILDKITE_PLUGIN_JUNIT_ANNOTATE_JOB_UUID_FILE_PATTERN=${BUILDKITE_PLUGIN_JUNIT_ANNOTATE_JOB_UUID_FILE_PATTERN:-}" \
     --env "BUILDKITE_PLUGIN_JUNIT_ANNOTATE_FAILURE_FORMAT=${BUILDKITE_PLUGIN_JUNIT_ANNOTATE_FAILURE_FORMAT:-}" \
+    ruby:2.7-alpine ruby /src/bin/annotate-active /junits \
+      > "$active_annotation_path"
+
+cat "$active_annotation_path"
+
+echo "--- :buildkite: Creating Active test annotation"
+# shellcheck disable=SC2002
+cat "$active_annotation_path" | buildkite-agent annotate --context "${BUILDKITE_PLUGIN_JUNIT_ANNOTATE_CONTEXT:-junit}-active" --style info
+
+docker \
+  --log-level "error" \
+  run \
+    --rm \
+    --volume "$artifacts_dir:/junits" \
+    --volume "$PLUGIN_DIR/ruby:/src" \
+    --env "BUILDKITE_PLUGIN_JUNIT_ANNOTATE_JOB_UUID_FILE_PATTERN=${BUILDKITE_PLUGIN_JUNIT_ANNOTATE_JOB_UUID_FILE_PATTERN:-}" \
+    --env "BUILDKITE_PLUGIN_JUNIT_ANNOTATE_FAILURE_FORMAT=${BUILDKITE_PLUGIN_JUNIT_ANNOTATE_FAILURE_FORMAT:-}" \
     ruby:2.7-alpine ruby /src/bin/annotate /junits \
       > "$annotation_path"
 
